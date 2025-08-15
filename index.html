@@ -71,6 +71,16 @@
 
     <!-- カスタムJavaScript -->
     <script src="js/main.js"></script>
+
+    <script defer>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/pokesuri-calendar/service-worker.js', {
+            scope: '/pokesuri-calendar/'
+          }).catch(console.error);
+        });
+      }
+    </script>
 </body>
 </html>
 
