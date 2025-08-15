@@ -1,0 +1,22 @@
+{
+  "name": "ポケスリカレンダー",
+  "short_name": "ポケスリカレンダー",
+  "description": "ポケスリのイベントを表示するアプリだよ",
+  "start_url": "/pokesuri-calendar/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4CAF50",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/pokesuri-calendar/img/icons/icon-calendar.webp",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/pokesuri-calendar/img/icons/icon-calendar.webp",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
