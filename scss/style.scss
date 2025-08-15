@@ -141,7 +141,7 @@ body {
 // カレンダーのカスタマイズ
 #calendar {
     background-color: $white;
-    border-radius: 0.5rem;
+    border-radius: 3px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     border: 2px solid #5a9b8e; // 緑色のボーダー
@@ -164,8 +164,12 @@ body {
     .fc-daygrid-day-number {
         color: $gray-700;
         font-weight: 500;
-        padding: 0.5rem;
+        //padding: 0.5rem;
         font-size: 14px;
+        @media (max-width: $mobile) {
+            font-size: 10px;
+            padding:0;
+        }
     }
 
     .fc-day-today {
