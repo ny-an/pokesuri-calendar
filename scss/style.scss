@@ -184,12 +184,18 @@ body {
     .fc-event {
         border: none;
         border-radius: 0.25rem;
-        padding: 0.25rem 0.5rem;
+        padding: 0.15rem 0.5rem;
         margin: 0.125rem;
-        font-size: 12px;
+        font-size: 11px;
         cursor: pointer;
         transition: all 0.2s ease-in-out;
         background-color: #4a8b7e;
+
+        @media (max-width: $mobile) {
+            padding: 0 2px;
+            margin: 2px;
+            font-size: 10px;
+        }
 
         &:hover {
             transform: translateY(-1px);
@@ -230,7 +236,8 @@ body {
 
     // 日付セルの内容
     .fc-daygrid-day-frame {
-        min-height: 100px;
+        //min-height: 100px;
+        min-height: calc(100vh / 7);
         position: relative;
     }
 

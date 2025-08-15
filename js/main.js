@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             height: 'auto',
             initialDate: new Date(), // 現在の日付から開始
             validRange: {
-                start: '2025-01-01' // 2025年1月から表示可能
+                start: '2025-08-01' // 表示開始月
             },
             events: events,
             eventClick: function(info) {
@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             },
             eventDisplay: 'block',
             dayMaxEvents: 3, // 1日に表示する最大イベント数
+            eventMaxStack: 3, // v6系で縦積み上限を明示
             moreLinkClick: 'popover', // 「他○件」をクリックした時の動作
             eventTimeFormat: {
                 hour: '2-digit',
