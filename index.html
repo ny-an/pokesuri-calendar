@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ポケスリカレンダー</title>
+    
+    <!-- FullCalendar CSS -->
+<!--    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">-->
+    
+    <!-- カスタムCSS -->
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- ヘッダー -->
+        <header class="header">
+            <div class="header-left">
+                <h1 class="header-title">ポケスリカレンダー</h1>
+                <div class="current-month" id="currentMonth">2025年1月</div>
+            </div>
+            <div class="header-controls">
+                <button id="prevBtn" class="nav-btn">前月</button>
+                <button id="todayBtn" class="nav-btn today-btn">今日</button>
+                <button id="nextBtn" class="nav-btn">次月</button>
+            </div>
+        </header>
+
+        <!-- カレンダーコンテナ -->
+        <main class="main-content">
+            <div id="calendar"></div>
+        </main>
+    </div>
+
+    <!-- イベント詳細モーダル -->
+    <div id="eventModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalTitle"></h2>
+            <div class="modal-body">
+                <p><strong>日時:</strong> <span id="modalDate"></span></p>
+                <p><strong>時間:</strong> <span id="modalTime"></span></p>
+                <p><strong>詳細:</strong></p>
+                <div id="modalDescription"></div>
+                <div id="modalTags" class="tags-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FullCalendar JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.19/index.global.min.js" integrity="sha512-oVdWXnAvkKCjV7eICa4Hbmdrtg2z8hvsQ6lC1/GRQck7hexUrp7fCJZVU/unJviMXCJdpT1rzUpxVKVKP8IcCA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<!--    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>-->
+
+    <!-- カスタムJavaScript -->
+    <script src="js/main.js"></script>
+</body>
+</html>
+
