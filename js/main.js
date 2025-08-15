@@ -7,17 +7,25 @@ document.addEventListener('DOMContentLoaded', async function() {
     // イベントデータを読み込む
     async function loadEvents() {
         try {
-            const response = await fetch('data/events.json');
-            if (!response.ok) {
-                throw new Error('イベントデータの読み込みに失敗しました');
-            }
-            eventsData = await response.json();
-            return eventsData;
+            const filesRes = await fetch('data/eventFiles.json');
+            if (!filesRes.ok) throw new Error('ファイルリストの取得に失敗');
+            const eventFiles = await filesRes.json();
+
+            const fetches = eventFiles.map(file =>
+              fetch(file).then(res => {
+                  if (!res.ok) throw new Error(file + 'の読み込みに失敗');
+                  return res.json();
+              })
+            );
+            const multipleEvents = await Promise.all(fetches);
+            const events = multipleEvents.flatMap(ev => Array.isArray(ev) ? ev : [ev]);
+            return events;
         } catch (error) {
             console.error('イベントデータの読み込みエラー:', error);
             return [];
         }
     }
+
 
     // FullCalendarを初期化
     function initializeCalendar(events) {
