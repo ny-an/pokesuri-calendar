@@ -38,8 +38,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 showEventModal(info.event);
             },
             eventDisplay: 'block',
-            eventMaxStack: 3, // v6系で縦積み上限を明示
-            dayMaxEvents: true, // 上限超えたらmore表示
+            eventMaxStack: 4, // v6系で縦積み上限を明示
+            dayMaxEvents: 4, // 上限超えたらmore表示
             moreLinkClick: 'popover', // 「他○件」をクリックした時の動作
             eventTimeFormat: {
                 hour: '2-digit',

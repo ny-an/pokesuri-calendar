@@ -170,7 +170,7 @@ body {
     .fc-daygrid-day {
         border: 1px solid #5a9b8e; // 緑色のボーダー
         background-color: white; // 白
-        min-height: 100px; // セルの最小高さを設定
+        min-height: calc(100dvh / 7); // セルの最小高さを設定
         
         &:hover {
             background-color: #d4f0ec;
@@ -351,6 +351,9 @@ body {
         margin: 0.5rem 0 1rem 0;
         white-space: pre-wrap;
         line-height: 1.6;
+
+        overflow-y: auto;
+        max-height: 600px;
     }
 
     .modal-actions{
