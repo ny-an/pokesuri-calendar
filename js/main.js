@@ -102,6 +102,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const modalTime = document.getElementById('modalTime');
         const modalDescription = document.getElementById('modalDescription');
         const modalTags = document.getElementById('modalTags');
+        const modalLinkEl = document.getElementById('modalLink');
 
         // イベント情報を設定
         modalTitle.textContent = event.title;
@@ -143,6 +144,22 @@ document.addEventListener('DOMContentLoaded', async function() {
                 tagElement.textContent = tag;
                 modalTags.appendChild(tagElement);
             });
+        }
+
+        // リンク（あればボタン表示、なければ非表示）
+        const link = extendedProps.link || event.url || '';
+        if (link) {
+            modalLinkEl.href = link;
+            modalLinkEl.style.display = 'inline-flex';
+        } else {
+            modalLinkEl.style.display = 'none';
+        }
+
+        // （任意）モーダルのアクセントにイベント色を反映
+        const color = event.backgroundColor || extendedProps.color || '';
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent && color) {
+            modalContent.style.borderTop = `4px solid ${color}`;
         }
 
         // モーダルを表示
