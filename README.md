@@ -3,9 +3,9 @@
 シンプルで使いやすい表示専用のカレンダーアプリケーションです。
 ポケスリイベントの情報だけを月表示カレンダーで確認できます。
 
-## デモ
+## サイト表示
 
-[GitHub Pages でのデモ](https://your-username.github.io/your-repository-name/)
+[ポケスリカレンダー（GitHub Pages）](https://ny-an.github.io/pokesuri-calendar//)
 
 ## 技術スタック
 
