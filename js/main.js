@@ -62,6 +62,18 @@ document.addEventListener('DOMContentLoaded', async function() {
             // 月が変わった時のコールバック
             datesSet: function(info) {
                 updateCurrentMonthDisplay(info.start);
+            },
+            eventDidMount:function(info) {
+                // カレンダーバー色の上書き処理
+                // console.log("event id:" + info.event.id,info);
+
+                // color2 があれば上書き
+                if (info.event.extendedProps && info.event.extendedProps.color2) {
+                    // a.fc-event自体に背景色を上書き
+                    info.el.style.background = info.event.extendedProps.color2;
+                    console.log("exist color2:" + info.event.extendedProps.color2);
+                }
+
             }
         });
 
