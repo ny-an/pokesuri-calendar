@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             dayHeaderFormat: { weekday: 'narrow' },
             // カレンダーの表示設定
             fixedWeekCount: false,
-            showNonCurrentDates: false,
+            showNonCurrentDates: true,
             // 月が変わった時のコールバック
             datesSet: function(info) {
                 updateCurrentMonthDisplay(info.start);
