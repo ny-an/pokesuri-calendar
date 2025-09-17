@@ -74,7 +74,13 @@ document.addEventListener('DOMContentLoaded', async function() {
                     console.log("exist color2:" + info.event.extendedProps.color2);
                 }
 
-            }
+            },
+            eventContent: function(arg) {
+              // デフォルトだとarg.timeTextに時刻（例"15:00"）が入る
+              // 時刻を消してタイトルだけ表示したい場合
+              return { html: `<div class="fc-event-title">${arg.event.title}</div>` };
+            },
+
         });
 
         calendar.render();
@@ -146,9 +152,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             
             if (event.end) {
                 const endTime = new Date(event.end).toLocaleTimeString('ja-JP', timeFormat);
-                modalTime.textContent = `${startTime} - ${endTime}`;
+                modalTime.textContent = `${startTime} 〜 ${endTime}`;
             } else {
-                modalTime.textContent = startTime;
+                modalTime.textContent = startTime + "〜";
             }
         }
 
