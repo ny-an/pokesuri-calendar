@@ -38,7 +38,42 @@
         <header class="header">
             <div class="header-inner">
                 <div class="header-left">
-                    <h1 class="header-title">ポケスリカレンダー</h1>
+                    <div class="header-title-row">
+                        <h1 class="header-title">ポケスリカレンダー</h1>
+                        <div class="header-icons">
+                            <button id="eventListBtn" class="header-icon-btn" title="イベント一覧">
+                                <span class="hamburger-icon">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </span>
+                            </button>
+                            <button id="filterBtn" class="header-icon-btn" title="フィルター">
+                                <span class="filter-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+                                        <path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                            </button>
+                            
+                            <!-- フィルターポップアップ -->
+                            <div id="filterPopup" class="filter-popup">
+                                <div class="filter-popup-content">
+                                    <div class="filter-popup-header">
+                                        <h3>フィルター</h3>
+                                        <button id="filterCloseBtn" class="filter-close-btn">&times;</button>
+                                    </div>
+                                    <div class="filter-popup-buttons">
+                                        <button id="filterAll" class="filter-popup-btn active" data-filter="all">すべて</button>
+                                        <button id="filterNewPokemon" class="filter-popup-btn" data-filter="new-pokemon">新ポケモン</button>
+                                        <button id="filterEvents" class="filter-popup-btn" data-filter="events">イベント・キャンペーン</button>
+                                        <button id="filterRegular" class="filter-popup-btn" data-filter="regular">定常イベント</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="current-month" id="currentMonth">2025年1月</div>
                 </div>
                 <div class="header-controls">
@@ -68,6 +103,48 @@
                 <div id="modalTags" class="tags-container"></div>
                 <div class="modal-actions">
                     <a id="modalLink" class="modal-link" href="#" target="_blank" rel="noopener noreferrer">公式ページを開く</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- イベント一覧ポップ画面 -->
+    <div id="eventListModal" class="modal">
+        <div class="modal-content event-list-modal">
+            <span class="close">&times;</span>
+            <h2>イベント一覧</h2>
+            <div class="event-list-controls">
+                <input type="text" id="eventSearchInput" placeholder="イベント名で検索..." class="search-input">
+                <button id="filterToggleBtn" class="filter-toggle-btn">
+                    絞り込み
+                </button>
+                <div id="eventTypeFilter" class="event-type-filter" style="display: none;">
+                    <div class="filter-row">
+                        <label>
+                            <input type="radio" name="eventTypeFilter" value="all" checked> すべて
+                        </label>
+                    </div>
+                    <div class="filter-row">
+                        <label>
+                            <input type="radio" name="eventTypeFilter" value="pokemon"> 新ポケモン
+                        </label>
+                        <label>
+                            <input type="radio" name="eventTypeFilter" value="field"> 新フィールド
+                        </label>
+                    </div>
+                    <div class="filter-row">
+                        <label>
+                            <input type="radio" name="eventTypeFilter" value="events"> イベント・キャンペーン
+                        </label>
+                        <label>
+                            <input type="radio" name="eventTypeFilter" value="regular"> 定常イベント
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="event-list-container">
+                <div id="eventListContent" class="event-list-content">
+                    <!-- イベント一覧がここに表示されます -->
                 </div>
             </div>
         </div>
