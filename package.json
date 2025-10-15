@@ -1,15 +1,17 @@
 {
   "name": "pokesuri-calendar",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Pokémon Sleep Event Calendar",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build-css": "sass css/style.scss css/style.css --style compressed",
+    "watch-css": "sass css/style.scss css/style.css --style compressed --watch",
+    "dev": "sass css/style.scss css/style.css --style expanded --watch",
+    "build": "npm run build-css"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "fullcalendar": "^6.1.19"
-  }
+  "devDependencies": {
+    "sass": "^1.69.0"
+  },
+  "keywords": ["pokemon", "sleep", "calendar", "events"],
+  "author": "@GaoGaoPuuun",
+  "license": "MIT"
 }
