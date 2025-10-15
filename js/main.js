@@ -20,24 +20,30 @@ document.addEventListener('DOMContentLoaded', async function() {
             const multipleEvents = await Promise.all(fetches);
             const events = multipleEvents.flatMap(ev => Array.isArray(ev) ? ev : [ev]);
             
-            // 日付形式を修正（曜日を削除してFullCalendarが解析できる形式に）
-            const processedEvents = events.map(event => {
-                if (event.start && event.start.includes(' (')) {
-                    event.start = event.start.split(' (')[0];
-                }
-                if (event.end && event.end.includes(' (')) {
-                    event.end = event.end.split(' (')[0];
-                }
-                return event;
-            });
-            
-            return processedEvents;
+            return events;
         } catch (error) {
             console.error('イベントデータの読み込みエラー:', error);
             return [];
         }
     }
 
+
+    // 曜日を取得する関数
+    function getWeekday(dateStr) {
+        const date = new Date(dateStr);
+        const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+        return weekdays[date.getDay()];
+    }
+
+    // 日付をフォーマットする関数（イベント一覧用）
+    function formatDateForList(dateStr) {
+        const date = new Date(dateStr);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const weekday = getWeekday(dateStr);
+        return `${year}年${month}月${day}日（${weekday}）`;
+    }
 
     // FullCalendarを初期化
     function initializeCalendar(events) {
@@ -469,30 +475,18 @@ document.addEventListener('DOMContentLoaded', async function() {
             const startDate = new Date(event.start);
             const endDate = event.end ? new Date(event.end) : null;
             
-            const startDateStr = startDate.toLocaleDateString('ja-JP', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
+            const startDateStr = formatDateForList(event.start);
             
             let periodStr = startDateStr;
-            if (endDate && !event.allDay) {
-                const endDateStr = endDate.toLocaleDateString('ja-JP', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                });
+            if (endDate && event.allDay) {
+                const endDateStr = formatDateForList(event.end);
                 if (startDateStr !== endDateStr) {
-                    periodStr = `${startDateStr} - ${endDateStr}`;
+                    periodStr = `${startDateStr}〜${endDateStr}`;
                 }
-            } else if (endDate && event.allDay) {
-                const endDateStr = endDate.toLocaleDateString('ja-JP', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                });
+            } else if (endDate && !event.allDay) {
+                const endDateStr = formatDateForList(event.end);
                 if (startDateStr !== endDateStr) {
-                    periodStr = `${startDateStr} - ${endDateStr}`;
+                    periodStr = `${startDateStr}〜${endDateStr}`;
                 }
             }
 
