@@ -19,7 +19,19 @@ document.addEventListener('DOMContentLoaded', async function() {
             );
             const multipleEvents = await Promise.all(fetches);
             const events = multipleEvents.flatMap(ev => Array.isArray(ev) ? ev : [ev]);
-            return events;
+            
+            // 日付形式を修正（曜日を削除してFullCalendarが解析できる形式に）
+            const processedEvents = events.map(event => {
+                if (event.start && event.start.includes(' (')) {
+                    event.start = event.start.split(' (')[0];
+                }
+                if (event.end && event.end.includes(' (')) {
+                    event.end = event.end.split(' (')[0];
+                }
+                return event;
+            });
+            
+            return processedEvents;
         } catch (error) {
             console.error('イベントデータの読み込みエラー:', error);
             return [];
