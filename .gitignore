@@ -1,2 +1,5 @@
 /.idea
 /node_modules
+# Shell scripts and documentation
+*.sh
+EVENT_FIX_README.md
