@@ -645,6 +645,11 @@ body {
     @include modal-base;
 }
 
+// モーダルが開いている時の背景スクロール無効化
+body.modal-open {
+    overflow: hidden;
+}
+
 .modal-content {
     @include modal-content;
 }

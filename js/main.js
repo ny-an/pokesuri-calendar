@@ -146,6 +146,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         const modalTags = document.getElementById('modalTags');
         const modalLinkEl = document.getElementById('modalLink');
 
+        // 背景スクロールを無効化
+        document.body.classList.add('modal-open');
+
         // イベント情報を設定
         modalTitle.textContent = event.title;
         
@@ -215,11 +218,13 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         closeBtn.addEventListener('click', function() {
             modal.style.display = 'none';
+            document.body.classList.remove('modal-open');
         });
 
         window.addEventListener('click', function(event) {
             if (event.target === modal) {
                 modal.style.display = 'none';
+                document.body.classList.remove('modal-open');
             }
         });
     }
@@ -330,6 +335,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         // モーダルを閉じる
         eventListCloseBtn.addEventListener('click', function() {
             eventListModal.style.display = 'none';
+            document.body.classList.remove('modal-open');
         });
 
         // 検索入力の即時フィルター
@@ -361,6 +367,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         window.addEventListener('click', function(event) {
             if (event.target === eventListModal) {
                 eventListModal.style.display = 'none';
+                document.body.classList.remove('modal-open');
             }
         });
     }
@@ -375,6 +382,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         // モーダルを表示
         eventListModal.style.display = 'block';
+        
+        // 背景スクロールを無効化
+        document.body.classList.add('modal-open');
     }
 
     // イベント一覧を生成
