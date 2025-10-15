@@ -494,6 +494,40 @@ body {
     }
 }
 
+.event-list-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: 1rem;
+}
+
+.go-to-month-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid $border-light;
+    background-color: $white;
+    border-radius: $radius;
+    cursor: pointer;
+    transition: $transition;
+    color: $text-light;
+    
+    &:hover {
+        background-color: $primary-color;
+        border-color: $primary-color;
+        color: $white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px $shadow;
+    }
+    
+    svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+
 .event-list-item-info {
     flex: 1;
 }
@@ -711,6 +745,10 @@ body.modal-open {
     
     .modal-actions {
         margin-top: 1rem;
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        flex-wrap: wrap;
     }
 }
 
@@ -729,6 +767,36 @@ body.modal-open {
     border-radius: 1rem;
     font-size: 12px;
     font-weight: 500;
+}
+
+.modal-go-to-month-btn {
+    @include button-primary;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 14px;
+    padding: 0.5rem 1rem;
+    
+    svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+.modal-link {
+    @include button-base;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    color: $text-color;
+    font-size: 14px;
+    padding: 0.5rem 1rem;
+    
+    &:hover {
+        background-color: $primary-color;
+        color: $white;
+        border-color: $primary-color;
+    }
 }
 
 // アニメーション

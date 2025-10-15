@@ -20,7 +20,32 @@ document.addEventListener('DOMContentLoaded', async function() {
             const multipleEvents = await Promise.all(fetches);
             const events = multipleEvents.flatMap(ev => Array.isArray(ev) ? ev : [ev]);
             
-            return events;
+            // FullCalendar用にイベントデータを変換
+            const formattedEvents = events.map(event => {
+                // 既にFullCalendar形式の場合はそのまま返す
+                if (event.id && event.title && event.start) {
+                    return {
+                        id: event.id,
+                        title: event.title,
+                        start: event.start,
+                        end: event.end || null,
+                        allDay: event.allDay !== false, // デフォルトは終日
+                        backgroundColor: event.color || '#5a9b8e',
+                        borderColor: event.color || '#5a9b8e',
+                        textColor: '#ffffff',
+                        extendedProps: {
+                            description: event.description || '',
+                            tags: event.tags || [],
+                            link: event.link || '',
+                            color: event.color || '#5a9b8e',
+                            color2: event.color2 || null
+                        }
+                    };
+                }
+                return event;
+            });
+            
+            return formattedEvents;
         } catch (error) {
             console.error('イベントデータの読み込みエラー:', error);
             return [];
@@ -57,6 +82,13 @@ document.addEventListener('DOMContentLoaded', async function() {
             height: 'auto',
             initialDate: new Date(), // 現在の日付から開始
             events: events,
+            // 過去のイベントも表示するための設定
+            showNonCurrentDates: true,
+            fixedWeekCount: false,
+            // 表示可能な日付範囲を制限（2023年7月以降）
+            validRange: {
+                start: '2023-07-01'
+            },
             eventClick: function(info) {
                 showEventModal(info.event);
             },
@@ -114,6 +146,28 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
+    // 指定されたイベントの月にカレンダーを移動
+    function goToEventMonth(eventDateStr) {
+        if (!calendar) return;
+        
+        const eventDate = new Date(eventDateStr);
+        
+        // カレンダーを指定された月に移動
+        calendar.gotoDate(eventDate);
+        
+        // 月表示を更新
+        updateCurrentMonthDisplay(eventDate);
+        
+        // スムーズスクロールでカレンダーを表示
+        const calendarElement = document.getElementById('calendar');
+        if (calendarElement) {
+            calendarElement.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
+    }
+
     // カスタムナビゲーションボタンの設定
     function setupNavigation() {
         const prevBtn = document.getElementById('prevBtn');
@@ -121,6 +175,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         const todayBtn = document.getElementById('todayBtn');
 
         prevBtn.addEventListener('click', function() {
+            const currentDate = calendar.getDate();
+            const minDate = new Date('2023-07-01');
+            
+            // 2023年7月以前に移動しようとした場合は制限
+            if (currentDate.getFullYear() === 2023 && currentDate.getMonth() === 6) {
+                return; // 2023年7月の場合は前月に移動しない
+            }
+            
             calendar.prev();
             updateCurrentMonthDisplay(calendar.getDate());
         });
@@ -145,6 +207,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const modalDescription = document.getElementById('modalDescription');
         const modalTags = document.getElementById('modalTags');
         const modalLinkEl = document.getElementById('modalLink');
+        const modalGoToMonthBtn = document.getElementById('modalGoToMonthBtn');
 
         // 背景スクロールを無効化
         document.body.classList.add('modal-open');
@@ -200,6 +263,30 @@ document.addEventListener('DOMContentLoaded', async function() {
             modalLinkEl.style.display = 'none';
         }
 
+        // 「対象月に移動」ボタンの設定
+        modalGoToMonthBtn.setAttribute('data-event-date', event.start);
+        modalGoToMonthBtn.addEventListener('click', function() {
+            const eventDate = this.getAttribute('data-event-date');
+            goToEventMonth(eventDate);
+            
+            // モーダルを閉じる
+            modal.style.display = 'none';
+            
+            // イベント一覧モーダルが開いていた場合は再表示
+            if (isEventListModalOpen) {
+                const eventListModal = document.getElementById('eventListModal');
+                eventListModal.style.display = 'block';
+                
+                // スクロール位置を復元
+                const eventListContainer = document.querySelector('.event-list-container');
+                if (eventListContainer) {
+                    eventListContainer.scrollTop = eventListScrollPosition;
+                }
+            } else {
+                document.body.classList.remove('modal-open');
+            }
+        });
+
         // （任意）モーダルのアクセントにイベント色を反映
         const color = event.backgroundColor || extendedProps.color || '';
         const modalContent = modal.querySelector('.modal-content');
@@ -218,13 +305,39 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         closeBtn.addEventListener('click', function() {
             modal.style.display = 'none';
-            document.body.classList.remove('modal-open');
+            
+            // イベント一覧モーダルが開いていた場合は再表示
+            if (isEventListModalOpen) {
+                const eventListModal = document.getElementById('eventListModal');
+                eventListModal.style.display = 'block';
+                
+                // スクロール位置を復元
+                const eventListContainer = document.querySelector('.event-list-container');
+                if (eventListContainer) {
+                    eventListContainer.scrollTop = eventListScrollPosition;
+                }
+            } else {
+                document.body.classList.remove('modal-open');
+            }
         });
 
         window.addEventListener('click', function(event) {
             if (event.target === modal) {
                 modal.style.display = 'none';
-                document.body.classList.remove('modal-open');
+                
+                // イベント一覧モーダルが開いていた場合は再表示
+                if (isEventListModalOpen) {
+                    const eventListModal = document.getElementById('eventListModal');
+                    eventListModal.style.display = 'block';
+                    
+                    // スクロール位置を復元
+                    const eventListContainer = document.querySelector('.event-list-container');
+                    if (eventListContainer) {
+                        eventListContainer.scrollTop = eventListScrollPosition;
+                    }
+                } else {
+                    document.body.classList.remove('modal-open');
+                }
             }
         });
     }
@@ -336,6 +449,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         eventListCloseBtn.addEventListener('click', function() {
             eventListModal.style.display = 'none';
             document.body.classList.remove('modal-open');
+            isEventListModalOpen = false; // フラグをリセット
         });
 
         // 検索入力の即時フィルター
@@ -368,6 +482,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (event.target === eventListModal) {
                 eventListModal.style.display = 'none';
                 document.body.classList.remove('modal-open');
+                isEventListModalOpen = false; // フラグをリセット
             }
         });
     }
@@ -385,6 +500,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         // 背景スクロールを無効化
         document.body.classList.add('modal-open');
+        
+        // イベント一覧モーダルが開いていることを記録
+        isEventListModalOpen = true;
     }
 
     // イベント一覧を生成
@@ -511,13 +629,26 @@ document.addEventListener('DOMContentLoaded', async function() {
                         <div class="event-list-item-period">${periodStr}</div>
                         <div class="event-list-item-tags">${tagsHtml}</div>
                     </div>
+                    <div class="event-list-item-actions">
+                        <button class="go-to-month-btn" data-event-date="${event.start}" title="対象月に移動">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8 2V5M16 2V5M3.5 9.09H20.5M21 8.5V17C21 20 19.5 22 16 22H8C4.5 22 3 20 3 17V8.5C3 5.5 4.5 3.5 8 3.5H16C19.5 3.5 21 5.5 21 8.5Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M15.6947 13.7H15.7037M15.6947 16.7H15.7037M11.9955 13.7H12.0045M11.9955 16.7H12.0045M8.29431 13.7H8.30329M8.29431 16.7H8.30329" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             `;
         }).join('');
 
         // イベントアイテムのクリックイベント
         eventListContent.querySelectorAll('.event-list-item').forEach(item => {
-            item.addEventListener('click', function() {
+            item.addEventListener('click', function(e) {
+                // ボタンクリックの場合は詳細表示をスキップ
+                if (e.target.closest('.go-to-month-btn')) {
+                    return;
+                }
+                
                 const eventId = this.getAttribute('data-event-id');
                 const event = allEvents.find(e => e.id === eventId);
                 if (event) {
@@ -525,17 +656,35 @@ document.addEventListener('DOMContentLoaded', async function() {
                     const eventListContainer = document.querySelector('.event-list-container');
                     eventListScrollPosition = eventListContainer.scrollTop;
                     
-                    // イベント詳細モーダルを表示
+                    // イベント詳細モーダルを表示（イベント一覧モーダルは非表示にするが、フラグは維持）
                     const eventListModal = document.getElementById('eventListModal');
                     eventListModal.style.display = 'none';
                     showEventModal(event);
                 }
             });
         });
+
+        // 「対象月に移動」ボタンのクリックイベント
+        eventListContent.querySelectorAll('.go-to-month-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation(); // 親要素のクリックイベントを防ぐ
+                const eventDate = this.getAttribute('data-event-date');
+                goToEventMonth(eventDate);
+                
+                // イベント一覧モーダルを閉じる
+                const eventListModal = document.getElementById('eventListModal');
+                eventListModal.style.display = 'none';
+                document.body.classList.remove('modal-open');
+                isEventListModalOpen = false; // フラグをリセット
+            });
+        });
     }
 
     // イベント一覧のスクロール位置を保存する変数
     let eventListScrollPosition = 0;
+    
+    // イベント一覧から詳細モーダルを開いたかどうかを管理する変数
+    let isEventListModalOpen = false;
 
     // イベント一覧のフィルタリング
     function filterEventList() {
