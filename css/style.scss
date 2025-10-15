@@ -391,7 +391,7 @@ body {
     padding: 0.5rem;
     border: 1px solid $border-light;
     border-radius: $radius;
-    font-size: 14px;
+    font-size: 16px;
     
     &:focus {
         outline: none;
@@ -466,9 +466,37 @@ body {
 }
 
 .event-list-container {
-    max-height: 60vh;
+    max-height: 70vh;
     overflow-y: auto;
     margin: 0 1.5rem 1.5rem 1.5rem;
+    
+    // スクロールバーのスタイリング
+    &::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    &::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 4px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+        
+        &:hover {
+            background: #94a3b8;
+        }
+    }
+    
+    // モバイル対応
+    @media (max-width: 768px) {
+        max-height: 60vh;
+        
+        &::-webkit-scrollbar {
+            width: 6px;
+        }
+    }
 }
 
 .event-list-content {
@@ -740,7 +768,35 @@ body.modal-open {
         white-space: pre-wrap;
         line-height: 1.6;
         overflow-y: auto;
-        max-height: 500px;
+        max-height: 40vh;
+        
+        // スクロールバーのスタイリング
+        &::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        &::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 4px;
+        }
+        
+        &::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+            
+            &:hover {
+                background: #94a3b8;
+            }
+        }
+        
+        // モバイル対応
+        @media (max-width: 768px) {
+            max-height: 30vh;
+            
+            &::-webkit-scrollbar {
+                width: 6px;
+            }
+        }
     }
     
     .modal-actions {
@@ -833,6 +889,36 @@ body.modal-open {
     
     .fc-col-header-cell-cushion {
         font-size: 12px;
+    }
+    
+    // モバイルでのスクロール改善
+    .event-list-modal {
+        max-height: 90vh;
+    }
+    
+    .modal-content {
+        margin: 5% auto;
+        max-height: 90vh;
+        overflow-y: auto;
+        
+        // モバイルでのスクロールバー
+        &::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        &::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+        
+        &::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+            
+            &:hover {
+                background: #94a3b8;
+            }
+        }
     }
 }
 
