@@ -272,19 +272,14 @@ document.addEventListener('DOMContentLoaded', async function() {
             // モーダルを閉じる
             modal.style.display = 'none';
             
-            // イベント一覧モーダルが開いていた場合は再表示
+            // イベント一覧モーダルが開いていた場合は閉じる（「対象月へ移動」の場合は再表示しない）
             if (isEventListModalOpen) {
                 const eventListModal = document.getElementById('eventListModal');
-                eventListModal.style.display = 'block';
-                
-                // スクロール位置を復元
-                const eventListContainer = document.querySelector('.event-list-container');
-                if (eventListContainer) {
-                    eventListContainer.scrollTop = eventListScrollPosition;
-                }
-            } else {
-                document.body.classList.remove('modal-open');
+                eventListModal.style.display = 'none';
+                isEventListModalOpen = false; // フラグをリセット
             }
+            
+            document.body.classList.remove('modal-open');
         });
 
         // （任意）モーダルのアクセントにイベント色を反映
