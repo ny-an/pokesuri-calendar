@@ -24,11 +24,33 @@ document.addEventListener('DOMContentLoaded', async function() {
             const formattedEvents = events.map(event => {
                 // 既にFullCalendar形式の場合はそのまま返す
                 if (event.id && event.title && event.start) {
+                    let displayEnd = event.end || null;
+                    
+                    // 週イベントの表示調整：endが開始日の1日以上後の場合、表示上は前日までとする
+                    if (displayEnd && event.allDay !== false) {
+                        const startDate = new Date(event.start);
+                        const endDate = new Date(displayEnd);
+                        
+                        // 開始日と終了日の日付部分のみを比較
+                        const startDateOnly = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+                        const endDateOnly = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+                        
+                        // 終了日が開始日の1日以上後の場合
+                        const daysDiff = Math.floor((endDateOnly - startDateOnly) / (1000 * 60 * 60 * 24));
+                        
+                        if (daysDiff >= 1) {
+                            // 表示用のendを1日前に調整
+                            const adjustedEnd = new Date(endDateOnly);
+                            adjustedEnd.setDate(adjustedEnd.getDate() - 1);
+                            displayEnd = adjustedEnd.toISOString().split('T')[0];
+                        }
+                    }
+                    
                     return {
                         id: event.id,
                         title: event.title,
                         start: event.start,
-                        end: event.end || null,
+                        end: displayEnd,
                         allDay: event.allDay !== false, // デフォルトは終日
                         backgroundColor: event.color || '#5a9b8e',
                         borderColor: event.color || '#5a9b8e',
