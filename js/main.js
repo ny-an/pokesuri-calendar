@@ -28,21 +28,22 @@ document.addEventListener('DOMContentLoaded', async function() {
                     
                     // 週イベントの表示調整：endが開始日の1日以上後の場合、表示上は前日までとする
                     if (displayEnd && event.allDay !== false) {
-                        const startDate = new Date(event.start);
-                        const endDate = new Date(displayEnd);
+                        // 日付文字列（YYYY-MM-DD）を直接パースして計算（タイムゾーン問題を回避）
+                        const startParts = event.start.split('-').map(Number);
+                        const endParts = displayEnd.split('-').map(Number);
                         
-                        // 開始日と終了日の日付部分のみを比較
-                        const startDateOnly = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
-                        const endDateOnly = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+                        // 日付オブジェクトを作成（UTCで作成してタイムゾーン問題を回避）
+                        const startDateOnly = new Date(Date.UTC(startParts[0], startParts[1] - 1, startParts[2]));
+                        const endDateOnly = new Date(Date.UTC(endParts[0], endParts[1] - 1, endParts[2]));
                         
                         // 終了日が開始日の1日以上後の場合
                         const daysDiff = Math.floor((endDateOnly - startDateOnly) / (1000 * 60 * 60 * 24));
                         
                         if (daysDiff >= 1) {
-                            // 表示用のendを1日前に調整
-                            const adjustedEnd = new Date(endDateOnly);
-                            adjustedEnd.setDate(adjustedEnd.getDate() - 1);
-                            displayEnd = adjustedEnd.toISOString().split('T')[0];
+                            // FullCalendarのendは排他的（その日を含まない）ため、
+                            // 28日まで表示するにはend: "2025-12-29"が必要
+                            // つまり、元のendをそのまま使用する（1日引かない）
+                            // displayEndは既に元のendと同じ値なので、そのまま使用
                         }
                     }
                     
