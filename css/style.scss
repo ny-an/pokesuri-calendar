@@ -855,6 +855,219 @@ body.modal-open {
     }
 }
 
+// 非公式リンク
+.modal-unofficial-links {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid $border-color;
+}
+
+.modal-unofficial-links-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 14px;
+    color: $text-light;
+    
+    strong {
+        color: $text-color;
+        font-weight: 600;
+    }
+}
+
+.modal-unofficial-add-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    color: $text-light;
+    text-decoration: none;
+    border-radius: 50%;
+    transition: $transition;
+    
+    &:hover {
+        background-color: #f1f5f9;
+        color: $primary-color;
+    }
+    
+    svg {
+        width: 100%;
+        height: 100%;
+    }
+}
+
+.modal-unofficial-links-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.unofficial-tweet-wrapper {
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    
+    iframe {
+        max-width: 100%;
+        width: 100%;
+        border-radius: 0;
+    }
+    
+    > div {
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+// リンクカード（ブログなど）
+.unofficial-link-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid $border-light;
+    border-radius: $radius;
+    background-color: $white;
+    transition: $transition;
+    overflow: hidden;
+    
+    &:hover {
+        border-color: $primary-color;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+}
+
+.unofficial-link-card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.unofficial-link-card-thumbnail {
+    width: 100%;
+    height: 120px;
+    background-color: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $text-light;
+    overflow: hidden;
+    
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    
+    svg {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+.unofficial-link-card-text {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.unofficial-link-card-name {
+    font-weight: 600;
+    color: $text-color;
+    font-size: 14px;
+    margin-bottom: 0.25rem;
+}
+
+.unofficial-link-card-url {
+    font-size: 12px;
+    color: $text-light;
+    word-break: break-all;
+    margin-top: 0.25rem;
+}
+
+.modal-unofficial-link-item {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border: 1px solid $border-light;
+    background-color: #f8fafc;
+    color: $text-color;
+    border-radius: $radius;
+    font-size: 14px;
+    text-decoration: none;
+    transition: $transition;
+    cursor: pointer;
+    font-family: inherit;
+    width: fit-content;
+    max-width: 100%;
+    
+    &:hover {
+        background-color: #e2e8f0;
+        border-color: $border-hover;
+        color: $text-dark;
+    }
+}
+
+// 非公式リンク詳細モーダル
+.unofficial-link-modal-title {
+    padding: 1.5rem 1.5rem 0 1.5rem;
+    padding-right: 3rem;
+}
+
+.unofficial-link-info {
+    margin-bottom: 1rem;
+    
+    p {
+        margin-bottom: 0.75rem;
+        
+        strong {
+            color: $text-color;
+            font-weight: 600;
+        }
+    }
+}
+
+.unofficial-link-content {
+    margin-top: 0.5rem;
+    margin-left: -1.5rem;
+    margin-right: -1.5rem;
+    min-height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0;
+    
+    // Twitter埋め込みのスタイル
+    iframe {
+        max-width: 100%;
+        width: 100%;
+        border-radius: 0;
+    }
+    
+    // Twitter埋め込みコンテナ
+    > div {
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+.unofficial-link-url-display {
+    background-color: #f1f5f9;
+    padding: 0.75rem;
+    border-radius: $radius;
+    word-break: break-all;
+    font-size: 13px;
+    color: $text-color;
+    margin-top: 0.5rem;
+    border: 1px solid $border-light;
+    width: 100%;
+}
+
+
 // アニメーション
 @keyframes fadeIn {
     from {

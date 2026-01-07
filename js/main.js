@@ -4,6 +4,22 @@ document.addEventListener('DOMContentLoaded', async function() {
     let calendar;
     let eventsData = [];
 
+    // 非公式リンクデータを読み込む
+    async function loadUnofficialLinks() {
+        try {
+            const res = await fetch('data/events_unofficial.json');
+            if (!res.ok) {
+                // ファイルが存在しない場合は空のオブジェクトを返す
+                console.warn('非公式リンクファイルが見つかりません');
+                return {};
+            }
+            return await res.json();
+        } catch (error) {
+            console.error('非公式リンクデータの読み込みエラー:', error);
+            return {};
+        }
+    }
+
     // イベントデータを読み込む
     async function loadEvents() {
         try {
@@ -19,6 +35,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             );
             const multipleEvents = await Promise.all(fetches);
             const events = multipleEvents.flatMap(ev => Array.isArray(ev) ? ev : [ev]);
+            
+            // 非公式リンクデータを読み込む
+            const unofficialLinksData = await loadUnofficialLinks();
             
             // FullCalendar用にイベントデータを変換
             const formattedEvents = events.map(event => {
@@ -47,6 +66,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                         }
                     }
                     
+                    // イベントIDで非公式リンクを取得
+                    const unofficialLinks = unofficialLinksData[event.id] || [];
+                    
                     return {
                         id: event.id,
                         title: event.title,
@@ -61,7 +83,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                             tags: event.tags || [],
                             link: event.link || '',
                             color: event.color || '#5a9b8e',
-                            color2: event.color2 || null
+                            color2: event.color2 || null,
+                            unofficialLinks: unofficialLinks
                         }
                     };
                 }
@@ -286,6 +309,132 @@ document.addEventListener('DOMContentLoaded', async function() {
             modalLinkEl.style.display = 'none';
         }
 
+        // 非公式リンクの表示（常に表示、リンクがない場合でも追加ボタンは表示）
+        const modalUnofficialLinks = document.getElementById('modalUnofficialLinks');
+        const modalUnofficialLinksList = document.getElementById('modalUnofficialLinksList');
+        const unofficialLinks = extendedProps.unofficialLinks || [];
+        
+        // 非公式リンクセクションを常に表示
+        modalUnofficialLinks.style.display = 'block';
+        modalUnofficialLinksList.innerHTML = '';
+        
+        // 非公式リンクがある場合は表示
+        if (unofficialLinks.length > 0) {
+            unofficialLinks.forEach((unofficialLink, index) => {
+                const tweetId = extractTweetId(unofficialLink.url || '');
+                
+                if (tweetId) {
+                    // Xのツイートを埋め込む（投稿者名は表示しない）
+                    const tweetWrapper = document.createElement('div');
+                    tweetWrapper.className = 'unofficial-tweet-wrapper';
+                    tweetWrapper.id = `tweet-wrapper-${event.id}-${index}`;
+                    
+                    modalUnofficialLinksList.appendChild(tweetWrapper);
+                    
+                    // Twitterウィジェットでツイートを埋め込む
+                    const loadTweet = () => {
+                        if (window.twttr && window.twttr.widgets) {
+                            window.twttr.widgets.createTweet(tweetId, tweetWrapper, {
+                                theme: 'light',
+                                align: 'center'
+                            }).catch(err => {
+                                console.error('ツイートの読み込みエラー:', err);
+                            });
+                        } else {
+                            setTimeout(() => {
+                                if (window.twttr && window.twttr.widgets) {
+                                    loadTweet();
+                                }
+                            }, 500);
+                        }
+                    };
+                    
+                    if (window.twttr) {
+                        window.twttr.ready(loadTweet);
+                    } else {
+                        const checkTwttr = setInterval(() => {
+                            if (window.twttr) {
+                                clearInterval(checkTwttr);
+                                window.twttr.ready(loadTweet);
+                            }
+                        }, 100);
+                        
+                        setTimeout(() => {
+                            clearInterval(checkTwttr);
+                        }, 5000);
+                    }
+                } else {
+                    // X以外のURLの場合はOGPサムネイル付きリンクカードとして表示
+                    const linkCard = document.createElement('a');
+                    linkCard.className = 'unofficial-link-card';
+                    linkCard.href = unofficialLink.url || '#';
+                    linkCard.target = '_blank';
+                    linkCard.rel = 'noopener noreferrer';
+                    
+                    // リンクカードのコンテンツ
+                    const cardContent = document.createElement('div');
+                    cardContent.className = 'unofficial-link-card-content';
+                    
+                    // サムネイルエリア（OGP画像を後で設定）
+                    const thumbnail = document.createElement('div');
+                    thumbnail.className = 'unofficial-link-card-thumbnail';
+                    thumbnail.innerHTML = `
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18 13V19A2 2 0 0 1 16 21H5A2 2 0 0 1 3 19V8A2 2 0 0 1 5 6H11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M15 3H21V9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M10 14L21 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    `;
+                    
+                    // テキストエリア
+                    const textArea = document.createElement('div');
+                    textArea.className = 'unofficial-link-card-text';
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'unofficial-link-card-name';
+                    nameDiv.textContent = unofficialLink.name || 'リンク';
+                    const urlDiv = document.createElement('div');
+                    urlDiv.className = 'unofficial-link-card-url';
+                    urlDiv.textContent = unofficialLink.url || '';
+                    
+                    textArea.appendChild(nameDiv);
+                    textArea.appendChild(urlDiv);
+                    
+                    cardContent.appendChild(thumbnail);
+                    cardContent.appendChild(textArea);
+                    linkCard.appendChild(cardContent);
+                    
+                    modalUnofficialLinksList.appendChild(linkCard);
+                    
+                    // OGP画像を取得してサムネイルに設定
+                    fetchOGPImage(unofficialLink.url).then(imageUrl => {
+                        if (imageUrl) {
+                            const img = document.createElement('img');
+                            img.src = imageUrl;
+                            img.alt = '';
+                            img.onerror = function() {
+                                // 画像読み込みエラー時はデフォルトアイコンを表示
+                                thumbnail.innerHTML = `
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M18 13V19A2 2 0 0 1 16 21H5A2 2 0 0 1 3 19V8A2 2 0 0 1 5 6H11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M15 3H21V9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M10 14L21 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                `;
+                            };
+                            thumbnail.innerHTML = '';
+                            thumbnail.appendChild(img);
+                        }
+                    }).catch(err => {
+                        console.error('OGP画像の取得エラー:', err);
+                    });
+                }
+            });
+        }
+
+        // GoogleFormsリンクの設定
+        const modalUnofficialAddLink = document.getElementById('modalUnofficialAddLink');
+        modalUnofficialAddLink.href = 'https://forms.gle/NVjAqkkyqn9NcMCw7';
+
         // 「対象月に移動」ボタンの設定
         modalGoToMonthBtn.setAttribute('data-event-date', event.start);
         modalGoToMonthBtn.addEventListener('click', function() {
@@ -314,6 +463,253 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         // モーダルを表示
         modal.style.display = 'block';
+    }
+
+    // X（Twitter）のURLからツイートIDを抽出
+    function extractTweetId(url) {
+        if (!url) return null;
+        
+        // x.com または twitter.com のURLからツイートIDを抽出
+        const match = url.match(/(?:x\.com|twitter\.com)\/\w+\/status\/(\d+)/);
+        return match ? match[1] : null;
+    }
+
+    // OGP画像を取得（高速化：並列で試行し、タイムアウトを設定）
+    async function fetchOGPImage(url) {
+        if (!url) return null;
+        
+        try {
+            // タイムアウトを3秒に設定
+            const timeout = 3000;
+            
+            // 複数のプロキシを並列で試行（最初に成功したものを返す）
+            const proxies = [
+                'https://api.allorigins.win/raw?url=',
+                'https://corsproxy.io/?'
+            ];
+            
+            const promises = proxies.map(proxyBase => 
+                Promise.race([
+                    fetchOGPImageWithProxy(url, proxyBase),
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Timeout')), timeout)
+                    )
+                ]).catch(() => null)
+            );
+            
+            // 最初に成功した結果を返す
+            const results = await Promise.allSettled(promises);
+            for (const result of results) {
+                if (result.status === 'fulfilled' && result.value) {
+                    return result.value;
+                }
+            }
+            
+            return null;
+        } catch (error) {
+            console.error('OGP画像の取得エラー:', error);
+            return null;
+        }
+    }
+
+    // CORSプロキシ経由でOGP画像を取得（高速化：AbortControllerでタイムアウト）
+    async function fetchOGPImageWithProxy(url, proxyBase) {
+        try {
+            const proxyUrl = `${proxyBase}${encodeURIComponent(url)}`;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000); // 3秒でタイムアウト
+            
+            const response = await fetch(proxyUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'text/html'
+                },
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) return null;
+            
+            const html = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            // og:image メタタグを取得
+            const ogImage = doc.querySelector('meta[property="og:image"]');
+            if (ogImage) {
+                let imageUrl = ogImage.getAttribute('content');
+                if (imageUrl) {
+                    // 相対パスの場合は絶対パスに変換
+                    if (imageUrl.startsWith('//')) {
+                        imageUrl = 'https:' + imageUrl;
+                    } else if (imageUrl.startsWith('/')) {
+                        const urlObj = new URL(url);
+                        imageUrl = urlObj.origin + imageUrl;
+                    } else if (!imageUrl.startsWith('http')) {
+                        const urlObj = new URL(url);
+                        imageUrl = urlObj.origin + '/' + imageUrl;
+                    }
+                    return imageUrl;
+                }
+            }
+            
+            // og:image がない場合は twitter:image を試す
+            const twitterImage = doc.querySelector('meta[name="twitter:image"]');
+            if (twitterImage) {
+                let imageUrl = twitterImage.getAttribute('content');
+                if (imageUrl) {
+                    // 相対パスの場合は絶対パスに変換
+                    if (imageUrl.startsWith('//')) {
+                        imageUrl = 'https:' + imageUrl;
+                    } else if (imageUrl.startsWith('/')) {
+                        const urlObj = new URL(url);
+                        imageUrl = urlObj.origin + imageUrl;
+                    } else if (!imageUrl.startsWith('http')) {
+                        const urlObj = new URL(url);
+                        imageUrl = urlObj.origin + '/' + imageUrl;
+                    }
+                    return imageUrl;
+                }
+            }
+            
+            return null;
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                // タイムアウトエラーは無視
+                return null;
+            }
+            console.error('OGP画像の取得エラー（プロキシ）:', error);
+            return null;
+        }
+    }
+
+    // 非公式リンクモーダルを表示
+    function showUnofficialLinkModal(unofficialLink) {
+        const modal = document.getElementById('unofficialLinkModal');
+        const modalTitle = document.getElementById('unofficialLinkModalTitle');
+        const linkName = document.getElementById('unofficialLinkName');
+        const linkContent = document.getElementById('unofficialLinkContent');
+        const linkOpenBtn = document.getElementById('unofficialLinkOpenBtn');
+
+        // 背景スクロールを無効化
+        document.body.classList.add('modal-open');
+
+        // リンク情報を設定
+        linkName.textContent = unofficialLink.name || '@不明';
+        
+        const url = unofficialLink.url || '';
+        linkOpenBtn.href = url;
+        
+        // X（Twitter）のURLかどうかを判定
+        const tweetId = extractTweetId(url);
+        
+        // コンテンツエリアをクリア
+        linkContent.innerHTML = '';
+        
+        if (tweetId) {
+            // Xのツイートを埋め込む
+            const tweetContainer = document.createElement('div');
+            tweetContainer.id = `tweet-${tweetId}`;
+            linkContent.appendChild(tweetContainer);
+            
+            // ローディング表示
+            const loadingDisplay = document.createElement('div');
+            loadingDisplay.className = 'unofficial-link-url-display';
+            loadingDisplay.textContent = 'ツイートを読み込み中...';
+            linkContent.appendChild(loadingDisplay);
+            
+            // Twitterウィジェットを読み込む
+            const loadTweet = () => {
+                if (window.twttr && window.twttr.widgets) {
+                    // ローディング表示を削除
+                    loadingDisplay.remove();
+                    
+                    window.twttr.widgets.createTweet(tweetId, tweetContainer, {
+                        theme: 'light',
+                        align: 'center'
+                    }).catch(err => {
+                        console.error('ツイートの読み込みエラー:', err);
+                        // エラー時はURLを表示
+                        tweetContainer.remove();
+                        const urlDisplay = document.createElement('div');
+                        urlDisplay.className = 'unofficial-link-url-display';
+                        urlDisplay.textContent = url;
+                        linkContent.appendChild(urlDisplay);
+                    });
+                } else {
+                    // Twitterウィジェットがまだ読み込まれていない場合、少し待ってから再試行
+                    setTimeout(() => {
+                        if (window.twttr && window.twttr.widgets) {
+                            loadTweet();
+                        } else {
+                            // タイムアウト時はURLを表示
+                            loadingDisplay.textContent = url;
+                            loadingDisplay.className = 'unofficial-link-url-display';
+                            tweetContainer.remove();
+                        }
+                    }, 500);
+                }
+            };
+            
+            // ウィジェットが既に読み込まれている場合
+            if (window.twttr) {
+                window.twttr.ready(loadTweet);
+            } else {
+                // ウィジェットの読み込みを待つ
+                const checkTwttr = setInterval(() => {
+                    if (window.twttr) {
+                        clearInterval(checkTwttr);
+                        window.twttr.ready(loadTweet);
+                    }
+                }, 100);
+                
+                // タイムアウト（5秒）
+                setTimeout(() => {
+                    clearInterval(checkTwttr);
+                    if (!window.twttr || !window.twttr.widgets) {
+                        loadingDisplay.textContent = url;
+                        loadingDisplay.className = 'unofficial-link-url-display';
+                        tweetContainer.remove();
+                    }
+                }, 5000);
+            }
+        } else {
+            // X以外のURLの場合はURLを表示
+            const urlDisplay = document.createElement('div');
+            urlDisplay.className = 'unofficial-link-url-display';
+            urlDisplay.textContent = url || 'URLがありません';
+            linkContent.appendChild(urlDisplay);
+        }
+        
+        // モーダルを表示
+        modal.style.display = 'block';
+    }
+
+    // 非公式リンクモーダルを閉じる
+    function setupUnofficialLinkModal() {
+        const modal = document.getElementById('unofficialLinkModal');
+        const closeBtn = document.querySelector('.unofficial-link-close');
+        const linkContent = document.getElementById('unofficialLinkContent');
+
+        const closeModal = function() {
+            modal.style.display = 'none';
+            document.body.classList.remove('modal-open');
+            // ツイート埋め込みをクリア
+            if (linkContent) {
+                linkContent.innerHTML = '';
+            }
+        };
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeModal);
+        }
+
+        window.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
     }
 
     // モーダルを閉じる
@@ -730,6 +1126,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         initializeCalendar(events);
         setupNavigation();
         setupModal();
+        setupUnofficialLinkModal();
         setupFilters();
         setupEventList();
     }
