@@ -865,7 +865,7 @@
   },
   {
     "id": "mew_miracle_snap_mission_2026",
-    "title": "【特別ミッション】ミュウのミラクルスナップミッション",
+    "title": "ミュウのミラクルスナップミッション",
     "start": "2026-02-27",
     "end": "2026-03-29",
     "allDay": false,
@@ -881,7 +881,7 @@
   },
   {
     "id": "pokemon_day_campaign_vol1_2026",
-    "title": "【キャンペーン】ポケモンデー記念キャンペーン vol.1",
+    "title": "ポケモンデー記念キャンペーン vol.1",
     "start": "2026-03-02",
     "end": "2026-03-08",
     "allDay": false,
