@@ -99,9 +99,13 @@ document.addEventListener('DOMContentLoaded', async function() {
                         isDateOnlyString(originalStart) &&
                         isDateOnlyString(originalEnd);
 
-                    // FullCalendarのendは排他的なので、時刻なしの timed range は
-                    // 表示用にだけ終了日を1日進めて元の終了日まで見せる。
-                    const displayEnd = hasDateOnlyTimedRange
+                    // FullCalendarのendは排他的。日付のみの終了はJSON上「含む最終日」なので、
+                    // FCに渡すときだけ+1日する（終日・日付のみの timed range の両方）。
+                    const needsExclusiveEndDate =
+                        Boolean(originalEnd) &&
+                        isDateOnlyString(originalEnd) &&
+                        (hasDateOnlyTimedRange || event.allDay !== false);
+                    const displayEnd = needsExclusiveEndDate
                         ? addDaysToDateString(originalEnd, 1)
                         : originalEnd;
                     
