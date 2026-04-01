@@ -81,3 +81,17 @@
 - **新登場パターン**: タイトルが「【新登場】」で始まる場合は新ポケモン/フィールド追加と判断し、保存タイトルは `新ポケ！OOO` 形式に変換する
 - **タイトル装飾の扱い**: 文字数節約のため、`【○○】` の分類ラベルと、タイトル全体を囲む `「」` は保存時に原則削除する
 - JSONファイルの構文エラーに注意（配列の最後にカンマが残っていないか）
+
+## Discord通知（git push後に実行）
+
+新規イベントを追加してpushした場合のみ、以下のWebhookで通知する。追加なし（重複のみ）の場合は通知不要。
+
+```
+WEBHOOK_URL="https://discord.com/api/webhooks/1488728436729053284/BjUnQ8QU5PHPyg8PXamp85gUrvO-rRdenjXXZdZCk3gt7RAXuU5W9mKYcgTe26L0oMRn"
+```
+
+fieldsに追加したイベントごとに `{name, value}` を入れる。形式：
+
+```bash
+curl -H "Content-Type: application/json" -d '{"embeds":[{"title":"📋 ポケスリカレンダー更新","description":"新しいイベントを追加しました","color":13124680,"fields":[{"name":"イベント名","value":"期間・概要","inline":false}],"footer":{"text":"Pokémon Sleep カレンダー自動更新"}}]}' "$WEBHOOK_URL"
+```
