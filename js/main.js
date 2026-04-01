@@ -4,6 +4,55 @@ document.addEventListener('DOMContentLoaded', async function() {
     let calendar;
     let eventsData = [];
 
+    function isDateOnlyString(value) {
+        return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
+    }
+
+    function hasTimeString(value) {
+        return typeof value === 'string' && /[T\s]\d{2}:\d{2}/.test(value);
+    }
+
+    function parseDateValue(value) {
+        if (!value) return null;
+
+        if (value instanceof Date) {
+            return new Date(value.getTime());
+        }
+
+        if (isDateOnlyString(value)) {
+            const [year, month, day] = value.split('-').map(Number);
+            return new Date(year, month - 1, day);
+        }
+
+        return new Date(value);
+    }
+
+    function addDaysToDateString(dateStr, days) {
+        const date = parseDateValue(dateStr);
+        if (!date) return dateStr;
+
+        date.setDate(date.getDate() + days);
+
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function formatDateForDisplay(dateValue, options) {
+        const date = parseDateValue(dateValue);
+        if (!date) return '';
+        return date.toLocaleDateString('ja-JP', options);
+    }
+
+    function formatDateRange(startValue, endValue, options) {
+        const startLabel = formatDateForDisplay(startValue, options);
+        if (!endValue) return startLabel;
+
+        const endLabel = formatDateForDisplay(endValue, options);
+        return startLabel === endLabel ? startLabel : `${startLabel}〜${endLabel}`;
+    }
+
     // 非公式リンクデータを読み込む
     async function loadUnofficialLinks() {
         try {
@@ -43,28 +92,18 @@ document.addEventListener('DOMContentLoaded', async function() {
             const formattedEvents = events.map(event => {
                 // 既にFullCalendar形式の場合はそのまま返す
                 if (event.id && event.title && event.start) {
-                    let displayEnd = event.end || null;
-                    
-                    // 週イベントの表示調整：endが開始日の1日以上後の場合、表示上は前日までとする
-                    if (displayEnd && event.allDay !== false) {
-                        // 日付文字列（YYYY-MM-DD）を直接パースして計算（タイムゾーン問題を回避）
-                        const startParts = event.start.split('-').map(Number);
-                        const endParts = displayEnd.split('-').map(Number);
-                        
-                        // 日付オブジェクトを作成（UTCで作成してタイムゾーン問題を回避）
-                        const startDateOnly = new Date(Date.UTC(startParts[0], startParts[1] - 1, startParts[2]));
-                        const endDateOnly = new Date(Date.UTC(endParts[0], endParts[1] - 1, endParts[2]));
-                        
-                        // 終了日が開始日の1日以上後の場合
-                        const daysDiff = Math.floor((endDateOnly - startDateOnly) / (1000 * 60 * 60 * 24));
-                        
-                        if (daysDiff >= 1) {
-                            // FullCalendarのendは排他的（その日を含まない）ため、
-                            // 28日まで表示するにはend: "2025-12-29"が必要
-                            // つまり、元のendをそのまま使用する（1日引かない）
-                            // displayEndは既に元のendと同じ値なので、そのまま使用
-                        }
-                    }
+                    const originalStart = event.start;
+                    const originalEnd = event.end || null;
+                    const hasDateOnlyTimedRange =
+                        event.allDay === false &&
+                        isDateOnlyString(originalStart) &&
+                        isDateOnlyString(originalEnd);
+
+                    // FullCalendarのendは排他的なので、時刻なしの timed range は
+                    // 表示用にだけ終了日を1日進めて元の終了日まで見せる。
+                    const displayEnd = hasDateOnlyTimedRange
+                        ? addDaysToDateString(originalEnd, 1)
+                        : originalEnd;
                     
                     // イベントIDで非公式リンクを取得
                     const unofficialLinks = unofficialLinksData[event.id] || [];
@@ -84,6 +123,9 @@ document.addEventListener('DOMContentLoaded', async function() {
                             link: event.link || '',
                             color: event.color || '#5a9b8e',
                             color2: event.color2 || null,
+                            originalStart: originalStart,
+                            originalEnd: originalEnd,
+                            hasDateOnlyTimedRange: hasDateOnlyTimedRange,
                             unofficialLinks: unofficialLinks
                         }
                     };
@@ -101,14 +143,14 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // 曜日を取得する関数
     function getWeekday(dateStr) {
-        const date = new Date(dateStr);
+        const date = parseDateValue(dateStr);
         const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
         return weekdays[date.getDay()];
     }
 
     // 日付をフォーマットする関数（イベント一覧用）
     function formatDateForList(dateStr) {
-        const date = new Date(dateStr);
+        const date = parseDateValue(dateStr);
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
@@ -196,7 +238,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     function goToEventMonth(eventDateStr) {
         if (!calendar) return;
         
-        const eventDate = new Date(eventDateStr);
+        const eventDate = parseDateValue(eventDateStr);
         
         // カレンダーを指定された月に移動
         calendar.gotoDate(eventDate);
@@ -260,10 +302,12 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         // イベント情報を設定
         modalTitle.textContent = event.title;
-        
+        const originalStart = event.extendedProps?.originalStart || event.start;
+        const originalEnd = event.extendedProps?.originalEnd || event.end;
+        const hasDateOnlyTimedRange = Boolean(event.extendedProps?.hasDateOnlyTimedRange);
+
         // 日付の表示
-        const startDate = new Date(event.start);
-        modalDate.textContent = startDate.toLocaleDateString('ja-JP', {
+        modalDate.textContent = formatDateRange(originalStart, originalEnd, {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
@@ -273,15 +317,22 @@ document.addEventListener('DOMContentLoaded', async function() {
         // 時間の表示
         if (event.allDay) {
             modalTime.textContent = '終日';
+        } else if (hasDateOnlyTimedRange) {
+            modalTime.textContent = '詳細参照';
         } else {
             const timeFormat = { hour: '2-digit', minute: '2-digit', hour12: false };
-            const startTime = startDate.toLocaleTimeString('ja-JP', timeFormat);
-            
-            if (event.end) {
-                const endTime = new Date(event.end).toLocaleTimeString('ja-JP', timeFormat);
+            const startDate = parseDateValue(originalStart);
+            const startTime = hasTimeString(originalStart)
+                ? startDate.toLocaleTimeString('ja-JP', timeFormat)
+                : null;
+
+            if (startTime && hasTimeString(originalEnd)) {
+                const endTime = parseDateValue(originalEnd).toLocaleTimeString('ja-JP', timeFormat);
                 modalTime.textContent = `${startTime} 〜 ${endTime}`;
+            } else if (startTime) {
+                modalTime.textContent = `${startTime}〜`;
             } else {
-                modalTime.textContent = startTime + "〜";
+                modalTime.textContent = '詳細参照';
             }
         }
 
@@ -928,8 +979,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         const eventsArray = allEvents.map(event => ({
             id: event.id,
             title: event.title,
-            start: event.start,
-            end: event.end,
+            start: event.extendedProps?.originalStart || event.start,
+            end: event.extendedProps?.originalEnd || event.end,
             allDay: event.allDay,
             description: event.extendedProps?.description || '',
             tags: event.extendedProps?.tags || [],
@@ -943,13 +994,13 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         // 過去のイベントと未来のイベントを分離
         const pastEvents = eventsArray.filter(event => {
-            const eventDate = new Date(event.start);
+            const eventDate = parseDateValue(event.start);
             eventDate.setHours(0, 0, 0, 0);
             return eventDate < now;
         });
 
         const futureEvents = eventsArray.filter(event => {
-            const eventDate = new Date(event.start);
+            const eventDate = parseDateValue(event.start);
             eventDate.setHours(0, 0, 0, 0);
             return eventDate >= now;
         });
@@ -990,7 +1041,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             // 定常イベントの場合は、過去のイベントもすべて含める
             const allRegularEvents = filterEventsByType(eventsArray);
             finalPastEvents = allRegularEvents.filter(event => {
-                const eventDate = new Date(event.start);
+                const eventDate = parseDateValue(event.start);
                 eventDate.setHours(0, 0, 0, 0);
                 return eventDate < now;
             });
@@ -998,14 +1049,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         // 過去のイベントと未来のイベントをそれぞれソート（新しい順）
         finalPastEvents.sort((a, b) => {
-            const dateA = new Date(a.start);
-            const dateB = new Date(b.start);
+            const dateA = parseDateValue(a.start);
+            const dateB = parseDateValue(b.start);
             return dateB - dateA; // 新しい順
         });
 
         filteredFutureEvents.sort((a, b) => {
-            const dateA = new Date(a.start);
-            const dateB = new Date(b.start);
+            const dateA = parseDateValue(a.start);
+            const dateB = parseDateValue(b.start);
             return dateA - dateB; // 未来のイベントは日付順
         });
 
@@ -1014,8 +1065,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         // HTMLを生成
         eventListContent.innerHTML = finalEventsArray.map(event => {
-            const startDate = new Date(event.start);
-            const endDate = event.end ? new Date(event.end) : null;
+            const endDate = event.end ? parseDateValue(event.end) : null;
             
             const startDateStr = formatDateForList(event.start);
             
