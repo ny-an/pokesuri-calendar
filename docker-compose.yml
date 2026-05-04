@@ -1,0 +1,8 @@
+services:
+  web:
+    build: .
+    # ローカル確認用: ホストのファイルをそのまま配信（JSON/JS 変更が再ビルド不要）
+    volumes:
+      - ./:/usr/share/nginx/html:ro
+    ports:
+      - "8080:80"
